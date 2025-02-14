@@ -1,0 +1,35 @@
+import requests
+from bs4 import BeautifulSoup
+from urllib.parse import urljoin
+
+url = "https://www.gushiwen.cn/gushi/tangshi.aspx"
+headers = {"user-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                        "AppleWebKit/537.36 (KHTML, like Gecko) "
+                        "Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0"}
+response = requests.get(url, headers = headers)
+soup = BeautifulSoup(response.content, "lxml")
+url_data = soup.find_all("span")
+hrefs = []
+for index, data in enumerate(url_data, start = 1):
+    if "href" in str(data):
+        href = data.find("a")["href"]
+        hrefs.append(href)
+file = "tangshi.txt"
+open(file, "w").close()
+for index, url in enumerate(hrefs, start =1):
+    response = requests.get(url, headers=headers)
+    soup = BeautifulSoup(response.content, "lxml")
+    detail = soup.find("div", id = "sonsyuanwen")
+    #print(detail.prettify())
+    print("*"*50)
+    name = detail.find("h1").get_text()
+    print(index, name)
+    poet = detail.find("a").get_text()
+    print(poet)
+    content = detail.find("div", class_= "contson").get_text().strip()
+    print(content)
+    with open(file, "a", encoding = "utf-8") as f:
+        f.write(f"{index}:{name}" + "\n")
+        f.write(poet + "\n")
+        f.write(content + "\n")
+
